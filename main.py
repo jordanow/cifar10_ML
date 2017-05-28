@@ -18,10 +18,11 @@ X_test, y_test = fr.get_image_data(DATA_FILES_FOLDER, 'test')
 rfc = classifier.rfclassifier(X, y, 100)
 y_predicted = rfc.predict(X_test)
 
-accuracy, precision, recall = st.get_statistics(y_test, y_predicted)
+accuracy, precision, recall, f1_score = st.get_statistics(y_test, y_predicted)
 print('Accuracy is :', accuracy)
 print('Precision is :', precision)
 print('Recall is :', recall)
+print('F1 Score is :', f1_score)
 
 # print("Test set score", classifier.score(X_test, y_test))
 # print("Predicted set score", classifier.score(X_test, y_predicted))
