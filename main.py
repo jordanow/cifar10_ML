@@ -1,16 +1,12 @@
-import seaborn as sn
 from sklearn.ensemble import RandomForestClassifier as rfc
 from sklearn.metrics import confusion_matrix
-import csv
 import datetime as dt
 import numpy as np
-import os
-import pickle
 import matplotlib.pyplot as plt
-from sklearn.metrics import accuracy_score
-from sklearn.metrics import precision_score
-from sklearn.metrics import recall_score
-import pandas as pd
+from sklearn import preprocessing
+from sklearn.metrics import accuracy_score, precision_score, recall_score
+
+import file_read as fr
 
 # All the data files must go in here
 DATA_FILES_FOLDER = 'cifar-10-batches-py'
@@ -22,85 +18,42 @@ X, y = [], []
 X_test, y_test = [], []
 
 
-def get_file_data(fileName):
-    fileopen = open(DATA_FILES_FOLDER + '/' + fileName, 'rb')
-    dict = pickle.load(fileopen, encoding='bytes')
-    fileopen.close()
-    return dict
-
-
-# Read all the data files in DATA_FILES_FOLDER
-def get_training_set():
-    for filename in os.listdir(DATA_FILES_FOLDER):
-        if filename.startswith("data"):
-            # print('Reading data from file', filename)
-            file_data = get_file_data(filename)
-            global X
-            if len(X) == 0:
-                X = np.array(file_data[b'data'])
-            else:
-                X = np.append(X, np.array(file_data[b'data']), axis=0)
-            global y
-            if len(y) == 0:
-                y = np.array(file_data[b'labels'])
-            else:
-                y = np.append(y, np.array(file_data[b'labels']))
-
-
-# Read the test file in DATA_FILES_FOLDER
-def get_test_set():
-    for filename in os.listdir(DATA_FILES_FOLDER):
-        if filename.startswith("test"):
-            # print('Reading data from file', filename)
-            file_data = get_file_data(filename)
-            global X_test
-            if len(X_test) == 0:
-                X_test = np.array(file_data[b'data'])
-            else:
-                X_test = np.append(X_test, np.array(
-                    file_data[b'data']), axis=0)
-            global y_test
-            if len(y_test) == 0:
-                y_test = np.array(file_data[b'labels'])
-            else:
-                y_test = np.append(y_test, np.array(file_data[b'labels']))
-
-
 def plot_confusion_matrix(cm, labels):
-    df_cm = pd.DataFrame(cm, index=[i for i in labels],
-                         columns=[i for i in labels])
-    plt.figure(figsize=(10, 7))
-    sn.heatmap(df_cm, annot=True)
+    plt.hist(cm, bins=30, normed=True)
+    plt.show()
 
 
 def get_statistics(y_true, y_pred):
     print('accuracy_score', accuracy_score(y_true, y_pred))
-    print('precision_score', precision_score(y_true, y_pred, average='weighted'))
+    print('precision_score', precision_score(
+        y_true, y_pred, average='weighted'))
     print('recall_score', recall_score(y_true, y_pred, average='weighted'))
 
 
 print('Started computation at', dt.datetime.now())
-get_training_set()
+X, y = fr.get_training_set(DATA_FILES_FOLDER)
+X_test, y_test = fr.get_test_set(DATA_FILES_FOLDER)
+# print(X_test.shape, y_test.shape)
 # print(X.shape, y.shape)
 
-classifier = rfc(n_estimators=50)
-classifier.fit(X, y)
+# classifier = rfc(n_estimators=50)
 
-print("Training set score", classifier.score(X, y))
+# X_train = preprocessing.scale(X)
+# y_train = y
+# classifier.fit(X, y)
 
-get_test_set()
-# print(X_test.shape, y_true.shape)
+# print("Training set score", classifier.score(X, y))
 
-y_predicted = classifier.predict(X_test)
+# y_predicted = classifier.predict(X_test)
 
-print("Test set score", classifier.score(X_test, y_test))
-print("Predicted set score", classifier.score(X_test, y_predicted))
+# print("Test set score", classifier.score(X_test, y_test))
+# print("Predicted set score", classifier.score(X_test, y_predicted))
 
-# Build confusion matrix
-conf_mat = confusion_matrix(y_test, y_predicted)
-print(conf_mat)
-# plot_confusion_matrix(conf_mat, y_test)
+# # Build confusion matrix
+# # conf_mat = confusion_matrix(y_test, y_predicted)
+# # print(conf_mat)
+# # plot_confusion_matrix(conf_mat, y_test)
 
-get_statistics(y_test, y_predicted)
+# get_statistics(y_test, y_predicted)
 
 print('Ended computation at', dt.datetime.now())
