@@ -1,12 +1,19 @@
 from collections import Counter
 from sklearn.metrics import accuracy_score, classification_report
 from sklearn.metrics import confusion_matrix
+from sklearn.model_selection import cross_val_score
 import matplotlib.pyplot as plt
 import numpy as np
 
+
+# Performs n fold cross validation and prints the validation score
+def n_fold_cross_validation(clf, X, y, n=10):
+    scores = cross_val_score(clf, X, y, cv=n)
+    print("Accuracy on %d fold cross validation: %0.2f (+/- %0.2f)" %
+          (n, scores.mean(), scores.std() * 2))
+
+
 # Return precision, recall, f1-score and support values
-
-
 def get_classification_report(y_true, y_pred):
     return classification_report(y_true, y_pred, digits=4)
 
@@ -58,25 +65,25 @@ def confusion_matrix(y_test, y_pred):
 
 def plot_confusion_matrix(y_test, y_pred):
     list_classes = sorted(list(set(y_test)))
-    cm=confusion_matrix(y_test, y_pred)
+    cm = confusion_matrix(y_test, y_pred)
     plt.figure()
     plt.imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
     plt.title('Confusion matrix')
     plt.colorbar()
-    tick_marks=np.arange(len(list_classes))
+    tick_marks = np.arange(len(list_classes))
     plt.xticks(tick_marks, list_classes, rotation=90)
     plt.yticks(tick_marks, list_classes)
     plt.tight_layout()
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
     plt.grid(True)
-    width, height=len(list_classes), len(list_classes)
+    width, height = len(list_classes), len(list_classes)
     for x in range(width):
         for y in range(height):
             if cm[x][y] > 100:
-                color='white'
+                color = 'white'
             else:
-                color='black'
+                color = 'black'
             if cm[x][y] > 0:
                 plt.annotate(str(cm[x][y]), xy=(y, x),
                              horizontalalignment='center',

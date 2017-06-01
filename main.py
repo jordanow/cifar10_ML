@@ -20,6 +20,8 @@ X_test, y_test = fr.get_image_data(DATA_FILES_FOLDER, 'test')
 def get_rfc_stats(estimators):
     rfc, X_train = classifier.rfclassifier(X, y, estimators)
 
+    st.n_fold_cross_validation(rfc, X_train, y, 20)
+
     y_test_predicted = rfc.predict(X_test)
     print(st.get_classification_report(
         y_test, y_test_predicted))
@@ -36,7 +38,7 @@ def get_rfc_stats(estimators):
 def get_LR_stats(components):
     cl, X_train = classifier.logistic_classifier(X, y, components)
 
-    y_test_predicted = rfc.predict(X_test)
+    y_test_predicted = cl.predict(X_test)
     print(st.get_classification_report(
         y_test, y_test_predicted))
 
@@ -51,7 +53,7 @@ def get_LR_stats(components):
 # st.plot_histogram(y)
 # st.plot_histogram(y_test)
 # get_LR_stats(300)
-get_rfc_stats(5)
+get_rfc_stats(1)
 
 # print("Test set score", classifier.score(X_test, y_test))
 # print("Predicted set score", classifier.score(X_test, y_predicted))
