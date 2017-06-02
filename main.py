@@ -1,4 +1,5 @@
 import datetime as dt
+from keras.datasets import cifar10
 
 import file_read as fr
 import statistics as st
@@ -28,7 +29,8 @@ def get_rfc_stats(estimators, method, num_features):
     # the input data
     if method == 'dimensional_reduction':
         global X_test
-        X_test = classifier.dimensional_reduction(X_test, y_test, num_features=num_features)
+        X_test = classifier.dimensional_reduction(
+            X_test, y_test, num_features=num_features)
 
     y_test_predicted = rfc.predict(X_test)
     print(st.get_classification_report(
@@ -43,14 +45,16 @@ def get_rfc_stats(estimators, method, num_features):
 
 
 # Get the statistics for logistic regression classifier
-def get_LR_stats(num_features):
-    cl, X_train = classifier.logistic_classifier(X, y, num_features)
+def get_LR_stats(num_features, method='pca'):
+    cl, X_train = classifier.logistic_classifier(X, y, num_features, method)
 
     st.n_fold_cross_validation(cl, X_train, y, 10)
 
     # We need to do this as the classifier only expect num_features in
     # the input data
-    X_test = classifier.dimensional_reduction(X_test, y_test, num_features=num_features)
+    global X_test
+    X_test = classifier.dimensional_reduction(
+        X_test, y_test, num_features=num_features)
 
     y_test_predicted = cl.predict(X_test)
     print(st.get_classification_report(
@@ -59,29 +63,47 @@ def get_LR_stats(num_features):
     print('Accuracy of test :', st.get_accuracy(
         y_test, y_test_predicted))
 
+    print('time until accuracy and everythng', dt.datetime.now())
+
     st.plot_confusion_matrix(y_test, y_test_predicted)
+
+    print('===========================================')
+
+
+def get_CNN_stats(lr):
+    (x_train, y_train), (x_test, y_test) = cifar10.load_data()
+
+    cl, y_test_predicted, score = classifier.cnn_classifier(
+        x_train, y_train, x_test, y_test, lr)
+
+    # print(st.get_classification_report(
+    #     y_test, y_test_predicted))
+
+    # print('Accuracy of test :', st.get_accuracy(
+    #     y_test, y_test_predicted))
+
+    print('Score of test', score[1])
+
+    print('time until accuracy and everythng', dt.datetime.now())
+
+    # st.plot_confusion_matrix(y_test, y_test_predicted)
 
     print('===========================================')
 
 
 # st.plot_histogram(y)
 # st.plot_histogram(y_test)
-# get_LR_stats(300)
 
 # With sklearn preprocessing
-# get_rfc_stats(5)
+# get_rfc_stats(5, method='preprocessing')
+# get_LR_stats(100, method='preprocessing')
 
-# With Dimensional reduction
-get_rfc_stats(50, method='dimensional_reduction', num_features=50)
+# With PCA
+# get_rfc_stats(200, method='pca', num_features=200)
+# get_LR_stats(100, method='pca')
 
 
-# print("Test set score", classifier.score(X_test, y_test))
-# print("Predicted set score", classifier.score(X_test, y_predicted))
-
-# # Build confusion matrix
-# # conf_mat = confusion_matrix(y_test, y_predicted)
-# # print(conf_mat)
-# # plot_confusion_matrix(conf_mat, y_test)
-
+# CNN
+get_CNN_stats(lr=0.001)
 
 print('Ended computation at', dt.datetime.now())
