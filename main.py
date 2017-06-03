@@ -1,6 +1,7 @@
 import datetime as dt
 from keras.datasets import cifar10
 import numpy as np
+from sklearn import preprocessing
 
 import file_read as fr
 import statistics as st
@@ -20,20 +21,12 @@ X_test, y_test = fr.get_image_data(DATA_FILES_FOLDER, 'test')
 
 
 # Get the statistics for Random forest classifier
-def get_rfc_stats(estimators, method, num_features):
-    rfc, X_train = classifier.rfclassifier(
-        X, y, estimators, method, num_features)
+def get_rfc_stats(method='sklearn', estimators=50, num_features=200):
+    cl_model, X_train, y_train, y_test_predicted = classifier.rf_classifier(
+        X, y, X_test, y_test, method, estimators,  num_features)
 
-    st.n_fold_cross_validation(rfc, X_train, y, 10)
+    # st.n_fold_cross_validation_score(cl_model, X_train, y_train, 10)
 
-    # We need to do this as the classifier only expect num_features in
-    # the input data
-    if method == 'dimensional_reduction':
-        global X_test
-        X_test = classifier.dimensional_reduction(
-            X_test, y_test, num_features=num_features)
-
-    y_test_predicted = rfc.predict(X_test)
     print(st.get_classification_report(
         y_test, y_test_predicted))
 
@@ -101,7 +94,7 @@ def get_CNN_stats(lr, epochs):
 # st.plot_histogram(y_test)
 
 # With sklearn preprocessing
-# get_rfc_stats(200, method='preprocessing')
+get_rfc_stats(method='sklearn', estimators=300, num_features=200)
 # get_LR_stats(100, method='preprocessing')
 
 # With PCA
@@ -110,6 +103,6 @@ def get_CNN_stats(lr, epochs):
 
 
 # CNN
-get_CNN_stats(lr=0.001, epochs=3)
+# get_CNN_stats(lr=0.001, epochs=3)
 
 print('Ended computation at', dt.datetime.now())

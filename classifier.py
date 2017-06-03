@@ -9,21 +9,27 @@ from keras.layers import Conv2D, MaxPooling2D
 import numpy as np
 
 
-def rfclassifier(X, y, estimators=50, method='preprocessing',  num_features=200):
-    print('Random Forest Classification using estimators', estimators)
+def rf_classifier(X_train, y_train, X_test, y_test, method, estimators,  num_features):
+    print('Random Forest Classification using estimators',
+          estimators, 'and preprocessing via', method)
     classifier = rfc(n_estimators=estimators)
 
     if method == 'pca':
         print('Performing dimensional reduction with features', num_features)
         X_train = dimensional_reduction(
-            X.astype(float), y, num_features=num_features)
+            X_train.astype(float), y_train, num_features=num_features)
+
+        X_test = dimensional_reduction(
+            X_test.astype(float), y_test, num_features=num_features)
     else:
         print('Performing sklearn preprocessing')
-        X_train = preprocessing.scale(X.astype(float))
+        X_train = preprocessing.scale(X_train.astype(float))
+        X_test = preprocessing.scale(X_test.astype(float))
 
-    y_train = y
     classifier.fit(X_train, y_train)
-    return classifier, X_train
+
+    y_test_predicted = classifier.predict(X_test)
+    return classifier, X_train, y_train, y_test_predicted
 
 
 def dimensional_reduction(X, y, num_features=200, batch_size=500):
@@ -50,7 +56,8 @@ def logistic_classifier(X, y, num_features, method):
 
 
 def cnn_classifier(x_train, y_train, x_test, y_test, lr=0.0001, epochs=1):
-    print('Performing cnn classification with learning rate =', lr, ' and epochs = ', epochs)
+    print('Performing cnn classification with learning rate =',
+          lr, ' and epochs = ', epochs)
     batch_size = 32
     num_classes = 10
     data_augmentation = True
