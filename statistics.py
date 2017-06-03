@@ -7,7 +7,8 @@ import numpy as np
 
 
 # Performs n fold cross validation and prints the validation score
-def n_fold_cross_validation(clf, X, y, n=10):
+def n_fold_cross_validation_score(clf, X, y, n=10):
+    print('Performing cross validation with folds =', n)
     scores = cross_val_score(clf, X, y, cv=n)
     print("Accuracy on %d fold cross validation: %0.2f (+/- %0.2f)" %
           (n, scores.mean(), scores.std() * 2))
@@ -23,11 +24,7 @@ def get_accuracy(y_true, y_pred):
     return accuracy_score(y_true, y_pred)
 
 
-def plot_confusion_matrix(cm, labels):
-    plt.hist(cm, bins=30, normed=True)
-    plt.show()
-
-
+# Plot histogram for given outputs
 def plot_histogram(y_train):
     # Make histogram of category distribution
     counter = Counter(y_train).most_common()
@@ -55,6 +52,7 @@ def plot_histogram(y_train):
     plt.show()
 
 
+# Returns the classes needed for plotting confusion matrix
 def confusion_matrix(y_test, y_pred):
     list_classes = sorted(list(set(y_test)))
     cm = np.zeros([len(list_classes), len(list_classes)], dtype=int)
