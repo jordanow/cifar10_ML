@@ -18,7 +18,6 @@ def rf_classifier(X_train, y_train, X_test, y_test, method, estimators,  num_fea
         print('Performing dimensional reduction with features', num_features)
         X_train = dimensional_reduction(
             X_train.astype(float), y_train, num_features=num_features)
-
         X_test = dimensional_reduction(
             X_test.astype(float), y_test, num_features=num_features)
     else:

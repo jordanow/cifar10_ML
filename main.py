@@ -25,7 +25,7 @@ def get_rfc_stats(method='sklearn', estimators=50, num_features=200):
     cl_model, X_train, y_train, y_test_predicted = classifier.rf_classifier(
         X, y, X_test, y_test, method, estimators,  num_features)
 
-    # st.n_fold_cross_validation_score(cl_model, X_train, y_train, 10)
+    st.n_fold_cross_validation_score(cl_model, X_train, y_train, 10)
 
     print(st.get_classification_report(
         y_test, y_test_predicted))
@@ -94,11 +94,11 @@ def get_CNN_stats(lr, epochs):
 # st.plot_histogram(y_test)
 
 # With sklearn preprocessing
-get_rfc_stats(method='sklearn', estimators=300, num_features=200)
+# get_rfc_stats(method='sklearn', estimators=400, num_features='')
 # get_LR_stats(100, method='preprocessing')
 
 # With PCA
-# get_rfc_stats(200, method='pca', num_features=200)
+# get_rfc_stats(method='pca', estimators=400, num_features=200)
 # get_LR_stats(100, method='pca')
 
 
