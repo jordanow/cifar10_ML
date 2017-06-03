@@ -8,8 +8,6 @@ from keras.layers import Dense, Dropout, Activation, Flatten
 from keras.layers import Conv2D, MaxPooling2D
 import numpy as np
 
-import statistics
-
 
 def rfclassifier(X, y, estimators=50, method='preprocessing',  num_features=200):
     print('Random Forest Classification using estimators', estimators)
@@ -46,18 +44,15 @@ def logistic_classifier(X, y, num_features, method):
         print('Performing sklearn preprocessing')
         X_train = preprocessing.scale(X.astype(float))
 
-    X_train = dimensional_reduction(
-        X.astype(float), y, num_features=num_features)
     y_train = y
     classifier.fit(X_train, y_train)
     return classifier, X_train
 
 
-def cnn_classifier(x_train, y_train, x_test, y_test, lr=0.0001):
-    print('Performing cnn classification with learning rate', lr)
+def cnn_classifier(x_train, y_train, x_test, y_test, lr=0.0001, epochs=1):
+    print('Performing cnn classification with learning rate =', lr, ' and epochs = ', epochs)
     batch_size = 32
     num_classes = 10
-    epochs = 1
     data_augmentation = True
 
     # Data preprocessing
@@ -107,10 +102,7 @@ def cnn_classifier(x_train, y_train, x_test, y_test, lr=0.0001):
                           validation_data=(x_test, y_test),
                           shuffle=True)
 
-    result = model.predict(x_test, batch_size=128)
-    y_test_predicted = np.argmax(result, axis=1)
+    y_test_predicted = model.predict(x_test, batch_size=128)
     score = model.evaluate(x_test, y_test, batch_size=32, verbose=1)
 
-    # plot model history
-    statistics.plot_cnn_stats(cnn_model)
-    return model, y_test_predicted, score
+    return cnn_model, y_test_predicted, score

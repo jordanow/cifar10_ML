@@ -1,5 +1,6 @@
 import datetime as dt
 from keras.datasets import cifar10
+import numpy as np
 
 import file_read as fr
 import statistics as st
@@ -52,9 +53,10 @@ def get_LR_stats(num_features, method='pca'):
 
     # We need to do this as the classifier only expect num_features in
     # the input data
-    global X_test
-    X_test = classifier.dimensional_reduction(
-        X_test, y_test, num_features=num_features)
+    if method == 'pca':
+        global X_test
+        X_test = classifier.dimensional_reduction(
+            X_test, y_test, num_features=num_features)
 
     y_test_predicted = cl.predict(X_test)
     print(st.get_classification_report(
@@ -70,23 +72,27 @@ def get_LR_stats(num_features, method='pca'):
     print('===========================================')
 
 
-def get_CNN_stats(lr):
+def get_CNN_stats(lr, epochs):
     (x_train, y_train), (x_test, y_test) = cifar10.load_data()
 
     cl, y_test_predicted, score = classifier.cnn_classifier(
-        x_train, y_train, x_test, y_test, lr)
+        x_train, y_train, x_test, y_test, lr, epochs)
 
-    # print(st.get_classification_report(
-    #     y_test, y_test_predicted))
+    y_test_predicted = np.argmax(y_test_predicted, axis=1)
+    y_test = np.argmax(y_test, axis=1)
 
-    # print('Accuracy of test :', st.get_accuracy(
-    #     y_test, y_test_predicted))
+    print(st.get_classification_report(
+        y_test, y_test_predicted))
+
+    print('Accuracy of test :', st.get_accuracy(
+        y_test, y_test_predicted))
 
     print('Score of test', score[1])
 
     print('time until accuracy and everythng', dt.datetime.now())
 
-    # st.plot_confusion_matrix(y_test, y_test_predicted)
+    # plot model history
+    st.plot_cnn_stats(cl)
 
     print('===========================================')
 
@@ -95,7 +101,7 @@ def get_CNN_stats(lr):
 # st.plot_histogram(y_test)
 
 # With sklearn preprocessing
-# get_rfc_stats(5, method='preprocessing')
+# get_rfc_stats(200, method='preprocessing')
 # get_LR_stats(100, method='preprocessing')
 
 # With PCA
@@ -104,6 +110,6 @@ def get_CNN_stats(lr):
 
 
 # CNN
-get_CNN_stats(lr=0.001)
+get_CNN_stats(lr=0.001, epochs=3)
 
 print('Ended computation at', dt.datetime.now())
