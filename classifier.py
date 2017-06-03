@@ -37,21 +37,26 @@ def dimensional_reduction(X, y, num_features=200, batch_size=500):
     return ipca.transform(X)
 
 
-def logistic_classifier(X, y, num_features, method):
-    print('Logistic Regression with features', num_features)
+def logistic_classifier(X_train, y_train, X_test, y_test, method,  num_features):
+    print('Logistic Regression with features',
+          num_features, 'and preprocessing via', method)
     classifier = LogisticRegression()
 
     if method == 'pca':
         print('Performing dimensional reduction with features', num_features)
         X_train = dimensional_reduction(
-            X.astype(float), y, num_features=num_features)
+            X_train.astype(float), y_train, num_features=num_features)
+        X_test = dimensional_reduction(
+            X_test.astype(float), y_test, num_features=num_features)
     else:
         print('Performing sklearn preprocessing')
-        X_train = preprocessing.scale(X.astype(float))
+        X_train = preprocessing.scale(X_train.astype(float))
+        X_test = preprocessing.scale(X_test.astype(float))
 
-    y_train = y
     classifier.fit(X_train, y_train)
-    return classifier, X_train
+
+    y_test_predicted = classifier.predict(X_test)
+    return classifier, X_train, y_train, y_test_predicted
 
 
 def cnn_classifier(x_train, y_train, x_test, y_test, lr=0.0001, epochs=1):

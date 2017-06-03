@@ -25,7 +25,7 @@ def get_rfc_stats(method='sklearn', estimators=50, num_features=200):
     cl_model, X_train, y_train, y_test_predicted = classifier.rf_classifier(
         X, y, X_test, y_test, method, estimators,  num_features)
 
-    st.n_fold_cross_validation_score(cl_model, X_train, y_train, 10)
+    # st.n_fold_cross_validation_score(cl_model, X_train, y_train, 10)
 
     print(st.get_classification_report(
         y_test, y_test_predicted))
@@ -39,26 +39,17 @@ def get_rfc_stats(method='sklearn', estimators=50, num_features=200):
 
 
 # Get the statistics for logistic regression classifier
-def get_LR_stats(num_features, method='pca'):
-    cl, X_train = classifier.logistic_classifier(X, y, num_features, method)
+def get_LR_stats(method='sklearn', num_features=200):
+    cl_model, X_train, y_train, y_test_predicted = classifier.logistic_classifier(
+        X, y, X_test, y_test, method,  num_features)
 
-    st.n_fold_cross_validation(cl, X_train, y, 10)
+    # st.n_fold_cross_validation_score(cl_model, X_train, y_train, 10)
 
-    # We need to do this as the classifier only expect num_features in
-    # the input data
-    if method == 'pca':
-        global X_test
-        X_test = classifier.dimensional_reduction(
-            X_test, y_test, num_features=num_features)
-
-    y_test_predicted = cl.predict(X_test)
     print(st.get_classification_report(
         y_test, y_test_predicted))
 
     print('Accuracy of test :', st.get_accuracy(
         y_test, y_test_predicted))
-
-    print('time until accuracy and everythng', dt.datetime.now())
 
     st.plot_confusion_matrix(y_test, y_test_predicted)
 
@@ -95,12 +86,11 @@ def get_CNN_stats(lr, epochs):
 
 # With sklearn preprocessing
 # get_rfc_stats(method='sklearn', estimators=400, num_features='')
-# get_LR_stats(100, method='preprocessing')
+# get_LR_stats(method='sklearn', num_features='')
 
 # With PCA
 # get_rfc_stats(method='pca', estimators=400, num_features=200)
-# get_LR_stats(100, method='pca')
-
+get_LR_stats(method='pca', num_features=200)
 
 # CNN
 # get_CNN_stats(lr=0.001, epochs=3)
