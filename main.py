@@ -21,11 +21,11 @@ X_test, y_test = fr.get_image_data(DATA_FILES_FOLDER, 'test')
 
 
 # Get the statistics for Random forest classifier
-def get_rfc_stats(method='sklearn', estimators=50, num_features=200):
+def get_rfc_stats(method='sklearn', estimators=50, num_features=200, preprocessing_method='scale'):
     cl_model, X_train, y_train, y_test_predicted = classifier.rf_classifier(
-        X, y, X_test, y_test, method, estimators,  num_features)
+        X, y, X_test, y_test, method, estimators,  num_features, preprocessing_method)
 
-    # st.n_fold_cross_validation_score(cl_model, X_train, y_train, 10)
+    st.n_fold_cross_validation_score(cl_model, X_train, y_train, 10)
 
     print(st.get_classification_report(
         y_test, y_test_predicted))
@@ -39,11 +39,11 @@ def get_rfc_stats(method='sklearn', estimators=50, num_features=200):
 
 
 # Get the statistics for logistic regression classifier
-def get_LR_stats(method='sklearn', num_features=200):
+def get_LR_stats(method='sklearn', num_features=200, preprocessing_method='scale'):
     cl_model, X_train, y_train, y_test_predicted = classifier.logistic_classifier(
-        X, y, X_test, y_test, method,  num_features)
+        X, y, X_test, y_test, method,  num_features, preprocessing_method)
 
-    # st.n_fold_cross_validation_score(cl_model, X_train, y_train, 10)
+    st.n_fold_cross_validation_score(cl_model, X_train, y_train, 10)
 
     print(st.get_classification_report(
         y_test, y_test_predicted))
@@ -56,11 +56,11 @@ def get_LR_stats(method='sklearn', num_features=200):
     print('===========================================')
 
 
-def get_CNN_stats(lr, epochs):
+def get_CNN_stats(lr, epochs, data_augmentation):
     (x_train, y_train), (x_test, y_test) = cifar10.load_data()
 
-    cl, y_test_predicted, score = classifier.cnn_classifier(
-        x_train, y_train, x_test, y_test, lr, epochs)
+    model, y_test_predicted, score = classifier.cnn_classifier(
+        x_train, y_train, x_test, y_test, lr, epochs, data_augmentation)
 
     y_test_predicted = np.argmax(y_test_predicted, axis=1)
     y_test = np.argmax(y_test, axis=1)
@@ -76,7 +76,7 @@ def get_CNN_stats(lr, epochs):
     print('time until accuracy and everythng', dt.datetime.now())
 
     # plot model history
-    st.plot_cnn_stats(cl)
+    st.plot_cnn_stats(model)
 
     print('===========================================')
 
@@ -85,14 +85,15 @@ def get_CNN_stats(lr, epochs):
 # st.plot_histogram(y_test)
 
 # With sklearn preprocessing
-# get_rfc_stats(method='sklearn', estimators=400, num_features='')
-# get_LR_stats(method='sklearn', num_features='')
+get_rfc_stats(method='pca', estimators=400,
+              num_features=200, preprocessing_method='scale')
+get_LR_stats(method='sklearn', num_features='', preprocessing_method='scale')
 
 # With PCA
-# get_rfc_stats(method='pca', estimators=400, num_features=200)
-get_LR_stats(method='pca', num_features=200)
+get_rfc_stats(method='pca', estimators=400, num_features=200, preprocessing_method='scale')
+get_LR_stats(method='pca', num_features=200, preprocessing_method='scale')
 
 # CNN
-# get_CNN_stats(lr=0.001, epochs=3)
+get_CNN_stats(lr=0.001, epochs=3, data_augmentation=True)
 
 print('Ended computation at', dt.datetime.now())

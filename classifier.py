@@ -1,15 +1,32 @@
-from sklearn.ensemble import RandomForestClassifier as rfc
-from sklearn import preprocessing
-from sklearn.linear_model import LogisticRegression
-from sklearn.decomposition import IncrementalPCA as IPCA
-import keras
-from keras.models import Sequential
-from keras.layers import Dense, Dropout, Activation, Flatten
 from keras.layers import Conv2D, MaxPooling2D
+from keras.layers import Dense, Dropout, Activation, Flatten
+from keras.models import Sequential
+from keras.preprocessing.image import ImageDataGenerator
+from sklearn import preprocessing
+from sklearn.decomposition import IncrementalPCA as IPCA
+from sklearn.ensemble import RandomForestClassifier as rfc
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
+import keras
 import numpy as np
 
 
-def rf_classifier(X_train, y_train, X_test, y_test, method, estimators,  num_features):
+def sklearn_preprocessing(X, y, method='scale'):
+    print('Performing sklearn preprocessing via', method)
+
+    if method == 'scale':
+        return preprocessing.scale(X)
+    elif method == 'standardscaler':
+        return StandardScaler().fit_transform(X, y)
+
+
+def dimensional_reduction(X, y, num_features=200, batch_size=500):
+    ipca = IPCA(n_components=num_features, batch_size=batch_size)
+    ipca.fit(X, y)
+    return ipca.transform(X)
+
+
+def rf_classifier(X_train, y_train, X_test, y_test, method, estimators,  num_features, preprocessing_method):
     print('Random Forest Classification using estimators',
           estimators, 'and preprocessing via', method)
     classifier = rfc(n_estimators=estimators)
@@ -21,9 +38,10 @@ def rf_classifier(X_train, y_train, X_test, y_test, method, estimators,  num_fea
         X_test = dimensional_reduction(
             X_test.astype(float), y_test, num_features=num_features)
     else:
-        print('Performing sklearn preprocessing')
-        X_train = preprocessing.scale(X_train.astype(float))
-        X_test = preprocessing.scale(X_test.astype(float))
+        X_train = sklearn_preprocessing(
+            X_train.astype(float), y_train.astype(float), preprocessing_method)
+        X_test = sklearn_preprocessing(
+            X_test.astype(float), y_test.astype(float), preprocessing_method)
 
     classifier.fit(X_train, y_train)
 
@@ -31,15 +49,10 @@ def rf_classifier(X_train, y_train, X_test, y_test, method, estimators,  num_fea
     return classifier, X_train, y_train, y_test_predicted
 
 
-def dimensional_reduction(X, y, num_features=200, batch_size=500):
-    ipca = IPCA(n_components=num_features, batch_size=batch_size)
-    ipca.fit(X, y)
-    return ipca.transform(X)
-
-
-def logistic_classifier(X_train, y_train, X_test, y_test, method,  num_features):
+def logistic_classifier(X_train, y_train, X_test, y_test, method, num_features, preprocessing_method):
     print('Logistic Regression with features',
           num_features, 'and preprocessing via', method)
+    # By default the 'multi_class' option is set to 'ovr'
     classifier = LogisticRegression()
 
     if method == 'pca':
@@ -49,9 +62,14 @@ def logistic_classifier(X_train, y_train, X_test, y_test, method,  num_features)
         X_test = dimensional_reduction(
             X_test.astype(float), y_test, num_features=num_features)
     else:
-        print('Performing sklearn preprocessing')
-        X_train = preprocessing.scale(X_train.astype(float))
-        X_test = preprocessing.scale(X_test.astype(float))
+        # For sklearn we reduce the size of the dataset
+        X_train = X_train[:10000]
+        y_train = y_train[:10000]
+
+        X_train = sklearn_preprocessing(
+            X_train.astype(float), y_train.astype(float), preprocessing_method)
+        X_test = sklearn_preprocessing(
+            X_test.astype(float), y_test.astype(float), preprocessing_method)
 
     classifier.fit(X_train, y_train)
 
@@ -59,12 +77,11 @@ def logistic_classifier(X_train, y_train, X_test, y_test, method,  num_features)
     return classifier, X_train, y_train, y_test_predicted
 
 
-def cnn_classifier(x_train, y_train, x_test, y_test, lr=0.0001, epochs=1):
+def cnn_classifier(x_train, y_train, x_test, y_test, lr=0.0001, epochs=1, data_augmentation=False):
     print('Performing cnn classification with learning rate =',
           lr, ' and epochs = ', epochs)
     batch_size = 32
     num_classes = 10
-    data_augmentation = True
 
     # Data preprocessing
     # Convert class vectors to binary class matrices.
@@ -107,11 +124,26 @@ def cnn_classifier(x_train, y_train, x_test, y_test, lr=0.0001, epochs=1):
                   optimizer=opt,
                   metrics=['accuracy'])
 
-    cnn_model = model.fit(x_train, y_train,
-                          batch_size=batch_size,
-                          epochs=epochs,
-                          validation_data=(x_test, y_test),
-                          shuffle=True)
+    if data_augmentation == False:
+        print('Without data augmentation')
+        cnn_model = model.fit(x_train, y_train,
+                              batch_size=batch_size,
+                              epochs=epochs,
+                              validation_data=(x_test, y_test),
+                              shuffle=True)
+    else:
+        print('Performing data augmentation')
+        datagen = ImageDataGenerator(
+            horizontal_flip=True,  # randomly flip images
+            vertical_flip=False)  # randomly flip images
+
+        df = datagen.flow(x_train, y_train,
+                          batch_size=batch_size)
+
+        cnn_model = model.fit_generator(df,
+                                        steps_per_epoch=x_train.shape[0] // batch_size,
+                                        epochs=epochs,
+                                        validation_data=(x_test, y_test))
 
     y_test_predicted = model.predict(x_test, batch_size=128)
     score = model.evaluate(x_test, y_test, batch_size=32, verbose=1)
