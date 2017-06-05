@@ -94,6 +94,6 @@ get_rfc_stats(method='pca', estimators=400, num_features=200, preprocessing_meth
 get_LR_stats(method='pca', num_features=200, preprocessing_method='scale')
 
 # CNN
-get_CNN_stats(lr=0.001, epochs=3, data_augmentation=True)
+get_CNN_stats(lr=0.001, epochs=10, data_augmentation=True)
 
 print('Ended computation at', dt.datetime.now())
